@@ -14,7 +14,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Created by leojpod on 2016-09-03.
@@ -28,9 +31,11 @@ public class Extractor {
         this._pdf = pdf;
         this._parser = new PDFParser(pdf);
     }
-    void extract() {
+
+    void extract() throws IOException {
         List<PDFPage> pages = _pdf.getPages();
         List<PageExtractor.Image> allImgs = new ArrayList<>();
+        Extractor.logger.fine("there are " + pages.size() + " pages to process");
         for (PDFPage page :
                 pages) {
             PageExtractor extract = _parser.getPageExtractor(page);
@@ -38,25 +43,34 @@ public class Extractor {
             allImgs.addAll(imgs);
         }
         Extractor.logger.fine("we've got " + allImgs.size() + " images");
-        PageExtractor.Image img = allImgs.get(0);
-        RenderedImage renderedImage = img.getImage();
 
-        // OpenJDK hack: We need to change the color model of the image to enable the rendering as JPG.
-        // this recipes was adapted from: http://stackoverflow.com/a/8170052/2698327
-        BufferedImage bufferedImage = new BufferedImage(renderedImage.getWidth(), renderedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-        Graphics2D g2d = bufferedImage.createGraphics();
-        g2d.drawRenderedImage(renderedImage, null);
-        g2d.dispose();
+        for (PageExtractor.Image img : allImgs) {
+            if (img.getMetaData() != null) {
+                BufferedReader reader = new BufferedReader(img.getMetaData());
+                System.out.println("metaData -> ");
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+            RenderedImage renderedImage = img.getImage();
 
-        try {
-            ImageIO.write(renderedImage, "png", new File("imgs/stuff.png"));
-            ImageIO.write(renderedImage, "gif", new File("imgs/stuff.gif"));
-            ImageIO.write(bufferedImage, "jpg", new File("imgs/stuff.jpg"));
-        } catch (IOException e) {
-            e.printStackTrace();
+            // OpenJDK hack: We need to change the color model of the image to enable the rendering as JPG.
+            // this recipes was adapted from: http://stackoverflow.com/a/8170052/2698327
+            BufferedImage bufferedImage = new BufferedImage(renderedImage.getWidth(), renderedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+            Graphics2D g2d = bufferedImage.createGraphics();
+            g2d.drawRenderedImage(renderedImage, null);
+            g2d.dispose();
+
+            try {
+                ImageIO.write(renderedImage, "png", new File("imgs/stuff.png"));
+                ImageIO.write(renderedImage, "gif", new File("imgs/stuff.gif"));
+                ImageIO.write(bufferedImage, "jpg", new File("imgs/stuff.jpg"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-
 
     public static void main(String[] args) {
         // write your code here
@@ -64,6 +78,11 @@ public class Extractor {
             System.err.println("This utility program needs two arguments to work: a path or URI to a PDF and a path to an output folder where the program should store the extracted pictures");
             System.exit(1);
         }
+        Extractor.logger.setLevel(Level.FINEST);
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        handler.setLevel(Level.ALL);
+        Extractor.logger.addHandler(handler);
 
         Extractor.logger.fine("let's start processing the parameters");
         Extractor.logger.fine("starting with " + args[0]);
