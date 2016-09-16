@@ -3,7 +3,9 @@ package jpod.leo.imgExtractor;
 import org.faceless.pdf2.*;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.*;
@@ -39,10 +41,17 @@ public class Extractor {
         PageExtractor.Image img = allImgs.get(0);
         RenderedImage renderedImage = img.getImage();
 
+        // OpenJDK hack: We need to change the color model of the image to enable the rendering as JPG.
+        // this recipes was adapted from: http://stackoverflow.com/a/8170052/2698327
+        BufferedImage bufferedImage = new BufferedImage(renderedImage.getWidth(), renderedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g2d = bufferedImage.createGraphics();
+        g2d.drawRenderedImage(renderedImage, null);
+        g2d.dispose();
+
         try {
             ImageIO.write(renderedImage, "png", new File("imgs/stuff.png"));
             ImageIO.write(renderedImage, "gif", new File("imgs/stuff.gif"));
-//            ImageIO.write(renderedImage, "jpg", new File("imgs/stuff.jpg"));
+            ImageIO.write(bufferedImage, "jpg", new File("imgs/stuff.jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
