@@ -1,28 +1,57 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <hello></hello>
+    <upload-form v-if="step === 'form'" @postPDF='postPDF'></upload-form>
+    <div v-if="step === 'loading'" class="mdl-spinner mdl-js-spinner is-active"></div>
+    <select-grid v-if="step === 'results'"></select-grid>
+    <toast :message='message' :type='type'></toast>
   </div>
 </template>
 
 <script>
-import Hello from './components/Hello'
+/* global FormData */
+import UploadForm from './components/UploadForm'
+import SelectGrid from './components/SelectGrid'
+import Toast from './components/Toast'
 
 export default {
   name: 'app',
+  data () {
+    return {
+      step: 'form',
+      message: undefined,
+      type: undefined
+    }
+  },
   components: {
-    Hello
+    UploadForm,
+    SelectGrid,
+    Toast
+  },
+  methods: {
+    postPDF (file, picType) {
+      console.log('App.postPDF starting')
+      let formData = new FormData()
+      formData.append('pdfFile', file)
+      formData.append('picType', picType)
+      this.step = 'loading'
+      this.message = undefined
+      this.$http.post('/api/extract', formData).then((response) => {
+        this.step = 'results'
+        console.log('api extract returned ! -> ', arguments)
+        console.log('response -> ', response)
+        this.message = 'analysis completed'
+        this.type = 'info'
+      }, (response) => {
+        this.step = 'form'
+        console.log('api extract returned with an error ! -> ', arguments)
+        console.log('response -> ', response)
+        this.type = 'error'
+        this.message = 'something went wrong with your request'
+      })
+    }
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
