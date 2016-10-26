@@ -9,6 +9,7 @@ import java.awt.image.RenderedImage;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -28,6 +29,7 @@ public class Extractor {
         PNG, JPG, GIF;
 
         void export(RenderedImage img, String path) throws IOException {
+            System.out.println("exporting to: " + path + "." + this.toString().toLowerCase());
             if (this == JPG) {
                 // OpenJDK hack: We need to change the color model of the image to enable the rendering as JPG.
                 // this recipes was adapted from: http://stackoverflow.com/a/8170052/2698327
@@ -36,10 +38,10 @@ public class Extractor {
                 Graphics2D g2d = bufferedImage.createGraphics();
                 g2d.drawRenderedImage(img, null);
                 g2d.dispose();
-                ImageIO.write(bufferedImage, "jpg", new File(path + ".jpg"));
+                ImageIO.write(bufferedImage, "jpg", new FileOutputStream(path + ".jpg"));
             } else {
                 String format = this.toString().toLowerCase();
-                ImageIO.write(img, format, new File(path + "." + format));
+                ImageIO.write(img, format, new FileOutputStream(path + "." + format));
             }
         }
     }
@@ -50,7 +52,7 @@ public class Extractor {
         this._parser = new PDFParser(pdf);
     }
 
-    void extract(PictureFormat[] formats, String basePath) throws IOException {
+    int extract(PictureFormat[] formats, String basePath) throws IOException {
         List<PDFPage> pages = _pdf.getPages();
         List<PageExtractor.Image> allImgs = new ArrayList<>();
         Extractor.logger.fine("there are " + pages.size() + " pages to process");
@@ -62,7 +64,7 @@ public class Extractor {
         }
         Extractor.logger.fine("we've got " + allImgs.size() + " images");
 
-        int count = 1;
+        int count = 0;
         for (PageExtractor.Image img : allImgs) {
             if (img.getMetaData() != null) {
                 BufferedReader reader = new BufferedReader(img.getMetaData());
@@ -74,23 +76,30 @@ public class Extractor {
             }
             RenderedImage renderedImage = img.getImage();
             try {
+                count++;
                 for (PictureFormat f : formats) {
                     f.export(renderedImage, basePath + "/img" + count);
                 }
-                count ++;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
+        return count;
     }
 
-    public static void main(String[] args) {
-        // write your code here
+    public static void main(String[] args) throws IOException {
         if (args.length < 2) {
-            System.err.println("This utility program needs two arguments to work: a path or URI to a PDF and a path to an output folder where the program should store the extracted pictures. You can also pass a third argument to specify the image format(s) to export the pictures to");
+            System.err.println("This utility program needs two arguments to work: " +
+                    "a path or URI to a PDF and a path to an output folder where the program should store the extracted pictures." +
+                    " You can also pass a third argument to specify the image format(s) to export the pictures to");
             System.exit(1);
         }
-        Extractor.logger.setLevel(Level.FINEST);
+        if (args.length > 3 && args[3] != "false") {
+            Extractor.logger.setLevel(Level.ALL);
+        } else {
+            Extractor.logger.setLevel(Level.OFF);
+        }
         ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter(new SimpleFormatter());
         handler.setLevel(Level.ALL);
@@ -115,33 +124,43 @@ public class Extractor {
         }
 
         PictureFormat[] formats = {PictureFormat.PNG};
-        if (args.length > 2) {
-            String[] formatsAsString = args[2].split(",");
+        if (args.length > 1) {
+            String[] formatsAsString = args[1].split(",");
+            System.out.println("reading requested formats: " + Arrays.toString(formatsAsString));
             List<PictureFormat> tempFormats = new ArrayList<>();
-            for (String format: formatsAsString) {
+            for (String format : formatsAsString) {
                 try {
                     tempFormats.add(PictureFormat.valueOf(format.trim().toUpperCase()));
                 } catch (IllegalArgumentException e) {
-                    Extractor.logger.warning("skipping '"+ format.trim() + "': unrecognized picture format");
+                    Extractor.logger.warning("skipping '" + format.trim() + "': unrecognized picture format");
                 }
             }
             formats = tempFormats.toArray(new PictureFormat[0]);
+            System.out.println("exporting to these formats: " + Arrays.toString(formats));
         }
         String basePath = "imgs";
-        if (args.length > 3) {
-            basePath = args[3];
+        if (args.length > 2) {
+            basePath = args[2];
         }
         File directory = new File(basePath);
-        for (File f : directory.listFiles()) {
-            f.delete();
+        Extractor.logger.fine("extracting pics to " + directory.getCanonicalPath());
+        if (!directory.exists()) {
+            directory.mkdir();
+        } else {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    f.delete();
+                }
+            }
         }
-
         PDFReader reader = null;
         try {
             reader = new PDFReader(stream);
             PDF pdf = new PDF(reader);
             Extractor extractor = new Extractor(pdf);
-            extractor.extract(formats, basePath);
+            int picCount = extractor.extract(formats, basePath);
+            System.out.println("extracted " + picCount + " pictures to " + directory.getCanonicalPath());
         } catch (IOException e) {
             System.err.println("Cannot read the PDF. Make sure the file locator you gave match a PDF");
             System.exit(2);
