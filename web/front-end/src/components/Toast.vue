@@ -1,7 +1,6 @@
 <template>
   <div v-mdl class="mdl-js-snackbar mdl-snackbar" >
     <div class="mdl-snackbar__text" >
-      {{!-- <i class="material-icons">{{ icon }}</i> --}}
     </div>
     <button class="mdl-snackbar__action" type="button"></button>
   </div>

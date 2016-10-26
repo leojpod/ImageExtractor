@@ -1,9 +1,13 @@
 <template>
   <div id="app">
     <upload-form v-if="step === 'form'" @postPDF='postPDF'></upload-form>
-    <div v-if="step === 'loading'" class="mdl-spinner mdl-js-spinner is-active"></div>
-    <select-grid v-if="step === 'results'"></select-grid>
-    <toast :message='message' :type='type'></toast>
+    <div v-if="step === 'loading'" class="spinner-container mdl-grid">
+      <div class="mdl-cell mdl-cell--middle mdl-cell--strech mdl-typography--text-center">
+        <div v-mdl class="mdl-spinner mdl-js-spinner is-active"></div>
+      </div>
+    </div>
+    <select-grid v-if="step === 'results' " :files="files" @done="cleanup"></select-grid>
+    <toast :message="message" :type="type"></toast>
   </div>
 </template>
 
@@ -19,7 +23,9 @@ export default {
     return {
       step: 'form',
       message: undefined,
-      type: undefined
+      type: undefined,
+      files: undefined,
+      pdfId: undefined
     }
   },
   components: {
@@ -39,6 +45,7 @@ export default {
         this.step = 'results'
         console.log('api extract returned ! -> ', arguments)
         console.log('response -> ', response)
+
         this.message = 'analysis completed'
         this.type = 'info'
       }, (response) => {
@@ -48,10 +55,25 @@ export default {
         this.type = 'error'
         this.message = 'something went wrong with your request'
       })
+    },
+    cleanup () {
+      this.$http.post(`/clean/${this.pdfId}`).then((response) => {
+        this.type = 'info'
+        this.message = 'treatment completed'
+        this.step = 'form'
+      }, (response) => {
+        this.type = 'error'
+        this.message = 'clean up didn\'t work'
+      })
     }
   }
 }
 </script>
 
 <style>
+.spinner-container {
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 56px); /* full screen - header's height */
+}
 </style>

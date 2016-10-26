@@ -1,6 +1,6 @@
 <template>
 <form class="mdl-grid" id="pdf-upload-form" name="pdf-upload-form" @submit.stop.prevent="postPDF" style="height: 50vh">
-  <div class="mdl-cell mdl-cell--8-col mdl-cell--2-offset mdl-cell--12-col-phone mdl-card mdl-shadow--2dp">
+  <div class="mdl-cell mdl-cell--8-col mdl-cell--2-offset mdl-card mdl-shadow--2dp">
     <div class="mdl-card__title mdl-card--expand">
       <h1 class="mdl-card__title-text">Pick a PDF file</h1></div>
     <div class="mdl-card__content mdl-layout">
