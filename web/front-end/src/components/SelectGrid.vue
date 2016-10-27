@@ -1,50 +1,39 @@
 <template>
 <div class="mdl-grid">
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-    <div class="mdl-card mdl-shadow--2dp">
-      <div class="mdl-card__title mdl-card--expand"></div>
-      <div class="mdl-card__actions"></div><label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox-1"><input class="mdl-checkbox__input" id="checkbox-1" type="checkbox"><span class="mdl-checkbox__label">Checkbox</span></label></div>
-  </div>
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-    <div class="mdl-card mdl-shadow--2dp">
-      <div class="mdl-card__title mdl-card--expand"></div>
-      <div class="mdl-card__actions"></div><label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox-1"><input class="mdl-checkbox__input" id="checkbox-1" type="checkbox"><span class="mdl-checkbox__label">Checkbox</span></label></div>
-  </div>
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-    <div class="mdl-card mdl-shadow--2dp">
-      <div class="mdl-card__title mdl-card--expand"></div>
-      <div class="mdl-card__actions"></div><label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox-1"><input class="mdl-checkbox__input" id="checkbox-1" type="checkbox"><span class="mdl-checkbox__label">Checkbox</span></label></div>
-  </div>
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-    <div class="mdl-card mdl-shadow--2dp">
-      <div class="mdl-card__title mdl-card--expand"></div>
-      <div class="mdl-card__actions"></div><label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox-1"><input class="mdl-checkbox__input" id="checkbox-1" type="checkbox"><span class="mdl-checkbox__label">Checkbox</span></label></div>
-  </div>
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-    <div class="mdl-card mdl-shadow--2dp">
-      <div class="mdl-card__title mdl-card--expand"></div>
-      <div class="mdl-card__actions"></div><label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox-1"><input class="mdl-checkbox__input" id="checkbox-1" type="checkbox"><span class="mdl-checkbox__label">Checkbox</span></label></div>
-  </div>
-  <div class="mdl-cell mdl-cell--4-col mdl-cell--6-col-tablet mdl-cell--4-col-phone">
-    <div class="mdl-card mdl-shadow--2dp">
-      <div class="mdl-card__title mdl-card--expand"></div>
-      <div class="mdl-card__actions"></div><label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox-1"><input class="mdl-checkbox__input" id="checkbox-1" type="checkbox"><span class="mdl-checkbox__label">Checkbox</span></label></div>
-  </div>
-  <div class="mdl-cell mdl-cell--12-col">
-    <div class="mdl-layout__header-row">
-      <div class="mdl-layout-spacer"></div><button class="mdl-button">Download!</button></div>
+  <template v-for="picUrl in picUrls">
+    <select-grid-item :cardImage="picUrl"></select-grid-item>
+  </template>
+  <div class="mdl-cell">
+    <button
+        v-mdl
+        type="button"
+        class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+        @click.prevent.stop="done">
+      <i class="material-icons">arrow_back</i>
+      Try with another PDF
+    </button>
+    <small>Or another type of picture...</small>
   </div>
 </div>
 </template>
 
 <script>
+import SelectGridItem from './SelectGridItem'
+
 export default {
+  props: ['picUrls'],
+  components: {
+    SelectGridItem
+  },
   data () {
     return {}
   },
   computed: {},
-  methods: {},
-  components: {}
+  methods: {
+    done () {
+      this.$emit('done')
+    }
+  }
 }
 </script>
 
