@@ -29,7 +29,7 @@ public class Extractor {
         PNG, JPG, GIF;
 
         void export(RenderedImage img, String path) throws IOException {
-            System.out.println("exporting to: " + path + "." + this.toString().toLowerCase());
+//            System.out.println("exporting to: " + path + "." + this.toString().toLowerCase());
             if (this == JPG) {
                 // OpenJDK hack: We need to change the color model of the image to enable the rendering as JPG.
                 // this recipes was adapted from: http://stackoverflow.com/a/8170052/2698327
@@ -126,7 +126,7 @@ public class Extractor {
         PictureFormat[] formats = {PictureFormat.PNG};
         if (args.length > 1) {
             String[] formatsAsString = args[1].split(",");
-            System.out.println("reading requested formats: " + Arrays.toString(formatsAsString));
+//            System.out.println("reading requested formats: " + Arrays.toString(formatsAsString));
             List<PictureFormat> tempFormats = new ArrayList<>();
             for (String format : formatsAsString) {
                 try {
@@ -136,7 +136,7 @@ public class Extractor {
                 }
             }
             formats = tempFormats.toArray(new PictureFormat[0]);
-            System.out.println("exporting to these formats: " + Arrays.toString(formats));
+//            System.out.println("exporting to these formats: " + Arrays.toString(formats));
         }
         String basePath = "imgs";
         if (args.length > 2) {
@@ -145,7 +145,7 @@ public class Extractor {
         File directory = new File(basePath);
         Extractor.logger.fine("extracting pics to " + directory.getCanonicalPath());
         if (!directory.exists()) {
-            directory.mkdir();
+            directory.mkdirs();
         } else {
             File[] files = directory.listFiles();
             if (files != null) {
