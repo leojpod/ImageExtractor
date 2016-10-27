@@ -1,5 +1,3 @@
 node_modules/
 npm-debug.*
-public
-views/index.ejs
 pdfs
