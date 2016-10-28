@@ -17,7 +17,7 @@ router.post('/extract', upload.single('pdfFile'), function (req, res) {
     'java',
     [
       '-jar',
-      '../out/artifacts/ImageExtractor_jar/ImageExtractor.jar',
+      './jars/ImageExtractor.jar',
       pdfFilePath,
       req.body.picType,
       outputPath
