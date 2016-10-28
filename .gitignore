@@ -18,3 +18,8 @@ hs_err_pid*
 *.pdf
 
 /pics/
+
+
+# builds for the web project
+/web/public
+/web/views/index.ejs
