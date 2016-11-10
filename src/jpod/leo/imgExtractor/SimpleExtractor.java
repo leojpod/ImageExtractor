@@ -56,12 +56,18 @@ public class SimpleExtractor {
             }
         }
 
-        PDFReader reader = null;
+        PDFReader reader;
+        PDF pdf;
+        PDFParser parser;
         try {
             reader = new PDFReader(stream);
-            PDF pdf = new PDF(reader);
-            PDFParser parser = new PDFParser(pdf);
-            List<PDFPage> pages = pdf.getPages();
+            pdf = new PDF(reader);
+            parser = new PDFParser(pdf);
+        } catch (IOException e) {
+            System.err.println("Cannot read the PDF. Make sure the file locator you gave match a PDF");
+            return;
+        }
+        List<PDFPage> pages = pdf.getPages();
             List<PageExtractor.Image> allImgs = new ArrayList<>();
             System.out.println("there are " + pages.size() + " pages to process");
             for (PDFPage page :
@@ -75,26 +81,20 @@ public class SimpleExtractor {
             int picCount = 0;
             for (PageExtractor.Image img : allImgs) {
                 RenderedImage renderedImage = img.getImage();
-                try {
-                    picCount++;
+                picCount++;
 
-                    // export to JPEG
-                    BufferedImage bufferedImage = new BufferedImage(renderedImage.getWidth(), renderedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-                    Graphics2D g2d = bufferedImage.createGraphics();
-                    g2d.drawRenderedImage(renderedImage, null);
-                    g2d.dispose();
-                    ImageIO.write(bufferedImage, "jpg", new FileOutputStream(basePath + "/img" + picCount + ".jpg"));
-                    // export to PNG
-                    ImageIO.write(renderedImage, "png", new FileOutputStream(basePath + "/img" + picCount + ".png"));
-                    ImageIO.write(renderedImage, "gif", new FileOutputStream(basePath + "/img" + picCount + ".gif"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                // export to JPEG
+                BufferedImage bufferedImage = new BufferedImage(renderedImage.getWidth(), renderedImage.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+                Graphics2D g2d = bufferedImage.createGraphics();
+                g2d.drawRenderedImage(renderedImage, null);
+                g2d.dispose();
+                ImageIO.write(bufferedImage, "jpg", new FileOutputStream(basePath + "/img" + picCount + ".jpg"));
+                // export to PNG
+                ImageIO.write(renderedImage, "png", new FileOutputStream(basePath + "/img" + picCount + ".png"));
+                ImageIO.write(renderedImage, "gif", new FileOutputStream(basePath + "/img" + picCount + ".gif"));
             }
             System.out.println("extracted " + picCount + " pictures to " + directory.getCanonicalPath());
-        } catch (IOException e) {
-            System.err.println("Cannot read the PDF. Make sure the file locator you gave match a PDF");
-        }
+
         System.out.println("we are done!");
     }
 }
